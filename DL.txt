@@ -1,0 +1,429 @@
+##### PRACTICAL NO. 1 #####
+
+##### Aim:Performing matrix Multiplication and finding eigen vector and eigen values using TensorFlow. #####
+
+!pip install keras
+!pip install tensorflow
+
+import keras
+import tensorflow as tf
+
+x = tf.constant([1,2,3,4,5,6], shape = [2,3])
+x
+
+y = tf.constant([7,8,9,10,11,12], shape = [3,2])
+y
+
+z = tf.matmul(x,y)
+z
+
+A = tf.random.uniform([3,3],minval=3,maxval=10,dtype=tf.float32)
+A
+
+eig_value,eig_vector = tf.linalg.eigh(A)
+
+eig_value
+
+eig_vector
+
+
+##### PRACTICAL NO. 2 #####
+
+##### Aim: Solving XOR problem using deep feed forward network #####
+
+import numpy as np
+from keras.models import Sequential
+from keras.layers import Dense
+
+model = Sequential()
+model.add(Dense(units = 2, activation = 'relu', input_dim = 2))
+model.add(Dense(units=1, activation = 'sigmoid'))
+model.compile(loss = 'binary_crossentropy', optimizer = 'adam', metrics = 'accuracy')
+
+X = np.array([[0.,0.],[0.,1.],[1.,0.],[1.,1.]])
+X
+
+y = np.array([0.,1.,1.,0.])
+y
+
+model.get_weights()
+model.fit(X,y,epochs = 500)
+
+predictions = model.predict(X)
+predictions
+
+
+
+##### PRACTICAL NO. 3 #####
+
+##### Aim: Implementing deep neural network for performing binary classification task. #####
+
+pip install keras
+
+from keras.models import Sequential
+from keras.layers import Dense
+
+import pandas as pd
+
+names =["No. of pregnancies","Glucose level","Blood Pressure","skin thickness","Insulin","BMI","Diabetes pedigree","Age","Class"]
+
+df=pd.read_csv("F:\MSC IT - 2nd Year 2022-2023\SEMESTER 4\Deep Learning\DL - Practical All Files\DL-practical\pima-indians-diabetes.csv",names = names)
+df.head(3)
+
+binaryc = Sequential()
+
+from tensorflow.tools.docs.doc_controls import doc_in_current_and_subclasses
+binaryc.add(Dense(units=10,activation='relu',input_dim=8))
+binaryc.add(Dense(units=8,activation='relu'))
+binaryc.add(Dense(units=1,activation='sigmoid'))
+
+binaryc.compile(loss='binary_crossentropy',optimizer='adam',metrics="accuracy")
+
+x = df.iloc[:,:-1]
+y = df.iloc[:,-1]
+
+from sklearn.model_selection import train_test_split
+xtrain,xtest,ytrain,ytest = train_test_split(x,y,test_size = 0.25, random_state=1)
+
+xtrain.shape
+
+ytrain.shape
+
+binaryc.fit(xtrain,ytrain,epochs=200,batch_size=20)
+
+predictions=binaryc.predict(xtest)
+
+predictions.shape
+
+class_labels=[]
+for i in predictions:
+  if(i>0.5):
+    class_labels.append(1)
+  else:
+    class_labels.append(0)
+
+class_labels
+
+from sklearn.metrics import accuracy_score
+print('Accuracy Score', accuracy_score(ytest,class_labels))
+
+
+##### PRACTICAL NO. 4 #####
+
+#### Aim: Using feed Forward Network with multiple hidden layers for performing multiclass classification and predicting the class. #####
+
+import pandas as pd
+from keras.models import Sequential
+from keras.layers import Dense
+
+names=["petal-length","petal-width","sepal-length","sepal-width","class"]
+
+df=pd.read_csv("F:\MSC IT - 2nd Year 2022-2023\SEMESTER 4\Deep Learning\DL - Practical All Files\DL-practical\Flower.csv", names=names)
+
+X = df.iloc[:,:-1].astype(float)
+y = df.iloc[:,-1]
+
+X.shape
+
+y.shape
+
+from sklearn.preprocessing import LabelEncoder
+lb = LabelEncoder()
+y = lb.fit_transform(y)
+y
+
+from keras.utils import np_utils
+encoded_Y = np_utils.to_categorical(y)
+encoded_Y
+
+model = Sequential()
+model.add(Dense(8,activation='relu',input_dim=4))
+model.add(Dense(6,activation='relu'))
+model.add(Dense(3,activation='softmax'))
+
+model.compile(loss='categorical_crossentropy', optimizer='adam')
+
+model.fit(X,encoded_Y,epochs=100,batch_size=10)
+
+predictions = model.predict(X)
+
+for i in range(35,130,3):
+  print(predictions[i],encoded_Y[i])
+
+import numpy as np
+a =[]
+for i in range(0,150):
+  a.append(np.argmax(predictions[i]))
+
+a
+
+newdf = pd.DataFrame(list(zip(a,y)),columns = ['A','Y'])
+newdf
+
+
+
+##### PRACTICAL NO. 5 #####
+
+##### Aim: Implementing regularization to avoid overfitting in binary classification. #####
+
+from sklearn.datasets import make_moons
+from keras.models import Sequential
+from keras.layers import Dense
+
+X,y = make_moons(n_samples=100,noise=0.2,random_state=1)
+
+X.shape
+
+y.shape
+
+X_train, Xtest = X[:30,:],X[30:,:]
+
+Y_train, Ytest =y[:30],y[30:]
+
+model=Sequential()
+model.add(Dense(500,input_dim=2,activation='relu'))
+model.add(Dense(1,activation='sigmoid'))
+
+model.compile(loss='binary_crossentropy',optimizer='adam', metrics='accuracy')
+
+history=model.fit(X_train, Y_train, validation_data=(Xtest,Ytest),epochs=4000)
+
+from matplotlib import pyplot
+pyplot.plot(history.history['accuracy'],label='train')
+pyplot.plot(history.history['val_accuracy'],label='test')
+pyplot.legend()
+
+from keras.regularizers import l2
+model_l2=Sequential()
+model_l2.add(Dense(500,input_dim=2,activation='relu',kernel_regularizer=l2(0.002)))
+model_l2.add(Dense(1,activation='sigmoid'))
+
+model_l2.compile(loss='binary_crossentropy',optimizer='adam',metrics='accuracy')
+
+history2=model_l2.fit(X_train,Y_train,validation_data=(Xtest,Ytest),epochs=4000)
+
+from matplotlib import pyplot
+pyplot.plot(history2.history['accuracy'],label='train')
+pyplot.plot(history2.history['val_accuracy'],label='test')
+pyplot.legend()
+
+from keras.regularizers import l1
+model_l1=Sequential()
+model_l1.add(Dense(500,input_dim=2,activation='relu',kernel_regularizer=l2(0.0002)))
+model_l1.add(Dense(1,activation='sigmoid'))
+
+model_l1.compile(loss='binary_crossentropy',optimizer='adam',metrics='accuracy')
+
+history1=model_l1.fit(X_train,Y_train,validation_data=(Xtest,Ytest),epochs=4000)
+
+from matplotlib import pyplot
+pyplot.plot(history1.history['accuracy'],label='train')
+pyplot.plot(history1.history['val_accuracy'],label='test')
+pyplot.legend()
+
+
+
+##### PRACTICAL NO. 6 #####
+
+##### Aim: Implementation of convolution neural network to predict numbers from number images. #####
+
+from keras.datasets import mnist
+from tensorflow.keras.utils import to_categorical
+from keras.models import Sequential
+from keras.layers import Dense,Conv2D,Flatten
+import matplotlib.pyplot as plt
+
+#initialize data
+(xtrain,ytrain),(xtest,ytest) = mnist.load_data()
+
+#shape x
+xtrain.shape
+xtest.shape
+print(xtrain.shape,xtest.shape)
+print(Xtrain.shape,Xtest.shape)
+xtrain = xtrain.reshape(60000,28,28,1)
+xtest = xtest.reshape(10000,28,28,1)
+
+#to categorical y
+ytrain = to_categorical(ytrain)
+ytest = to_categorical(ytest)
+
+#create model
+cnnmodel = Sequential()
+cnnmodel.add(Conv2D(64,kernel_size = 3, activation = 'relu', input_shape = (28,28,1)))
+cnnmodel.add(Conv2D(32,kernel_size = 3, activation = 'relu'))
+cnnmodel.add(Flatten())
+cnnmodel.add(Dense(10, activation = 'softmax'))
+
+#config
+cnnmodel.compile(loss='categorical_crossentropy', optimizer = 'adam', metrics='accuracy')
+
+#train
+cnnmodel.fit(xtrain, ytrain, validation_data = (xtest,ytest),epochs = 3)
+
+#final op
+print(cnnmodel.predict(xtrain[:10]))
+
+#check output from here
+plt.imshow(xtrain[0])
+
+##### PRACTICAL NO. 7 #####
+
+##### Aim: Demonstrate recurrent neural network that learns to perform sequence analysis for stock price. #####
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+from keras.layers import Dropout
+
+dataset_train=pd.read_csv('F:\MSC IT - 2nd Year 2022-2023\SEMESTER 4\Deep Learning\DL - Practical All Files\DL-practical\Google_Stock_Price_Train.csv')
+dataset_train.head(5)
+
+dataset_train.shape
+
+training_set=dataset_train.iloc[:,1:2].values
+print(training_set)
+
+from sklearn.preprocessing import MinMaxScaler
+sc=MinMaxScaler(feature_range=(0,1))
+
+training_set_scaled=sc.fit_transform(training_set)
+print(training_set_scaled)
+
+X_train=[]
+Y_train=[]
+
+for i in range(60,1258):
+  X_train.append(training_set_scaled[i-60:i,0])
+  Y_train.append(training_set_scaled[i,0])
+
+print(X_train[1])
+
+X_train,Y_train=np.array(X_train),np.array(Y_train)
+print(X_train)
+
+X_train=np.reshape(X_train,(X_train.shape[0],X_train.shape[1],1))
+print(X_train)
+
+model = Sequential()
+model.add(LSTM(units=50,return_sequences=True, input_shape=(X_train.shape[1],1)))
+model.add(Dropout(0.2))
+model.add(LSTM(units=50,return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(units=50,return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(units=50))
+model.add(Dense(units=1))
+
+model.compile(optimizer ='adam', loss ='mean_squared_error')
+
+model.fit(X_train,Y_train,epochs=100,batch_size=32)
+
+dataset_test=pd.read_csv('F:\MSC IT - 2nd Year 2022-2023\SEMESTER 4\Deep Learning\DL - Practical All Files\DL-practical\Google_Stock_Price_Test.csv')
+
+real_stock_price=dataset_test.iloc[:,1:2].values
+
+dataset_total=pd.concat((dataset_train['Open'],dataset_test['Open']),axis=0) 
+
+inputs = dataset_total[len(dataset_total)-len(dataset_test)-60:].values 
+inputs = inputs.reshape(-1,1)
+inputs = sc.transform(inputs)
+
+X_test=[]
+for i in range(60,80):
+  X_test.append(inputs[i-60:i,0])
+X_test=np.array(X_test)
+X_test=np.reshape(X_test,(X_test.shape[0],X_test.shape[1],1))
+predicted_stock_price=model.predict(X_test)
+
+predicted_stock_price=sc.inverse_transform(predicted_stock_price) 
+plt.plot(real_stock_price,color='red' ,label='real google stock price') 
+plt.plot(predicted_stock_price,color='blue',label='predicted stock price')
+plt.xlabel('time')
+plt.ylabel('google stock price')
+
+
+##### PRACTICAL NO. 8 #####
+
+##### Aim: Denoising of image using autoencoder. #####
+
+import keras
+import numpy as np
+
+from keras.layers import Dense
+from keras import layers
+from keras.datasets import mnist
+
+encoding_dim = 32
+
+input_img = keras.Input(shape=(784,))
+encoded=layers.Dense(encoding_dim,activation='relu')(input_img)
+decoded=layers.Dense(784,activation='sigmoid')(encoded)
+
+autoencoder = keras.Model(input_img,decoded)
+
+encoder=keras.Model(input_img,encoded)
+encoded_input=keras.Input(shape=(encoding_dim,))
+decoder_layers=autoencoder.layers[-1]
+decoder=keras.Model(encoded_input,decoder_layers(encoded_input))
+
+autoencoder.compile(optimizer='adam',loss='binary_crossentropy')
+
+(x_train,_),(x_test,_)=mnist.load_data()
+
+x_train.shape
+
+x_test.shape
+
+x_train=x_train.astype('float32')/255
+x_test=x_test.astype('float32')/255
+
+x_train[0]
+
+x_train=x_train.reshape((len(x_train),np.prod(x_train.shape[1:])))
+
+x_test=x_test.reshape((len(x_test),np.prod(x_test.shape[1:])))
+
+x_train[0]
+
+print(x_train.shape)
+
+print(x_test.shape)
+
+autoencoder.fit(x_train,x_train,epochs=50,batch_size=256,validation_data=(x_test,x_test))
+
+encoded_imgs=encoder.predict(x_test)
+decoded_imgs=decoder.predict(encoded_imgs)
+
+import matplotlib.pyplot as plt
+
+n=10
+plt.figure(figsize=(40,4))
+
+for i in range(10):
+  ax = plt.subplot(3,20,i+1)
+  plt.imshow(x_test[i].reshape(28,28))
+  plt.gray()
+  ax.get_xaxis().set_visible(False)
+  ax.get_yaxis().set_visible(False)
+
+  ax = plt.subplot(3,20,i+1+20)
+  plt.imshow(encoded_imgs[i].reshape(8,4))
+  plt.gray()
+  ax.get_xaxis().set_visible(False)
+  ax.get_yaxis().set_visible(False)
+    
+  ax = plt.subplot(3,20,2*20+i+1)
+  plt.imshow(decoded_imgs[i].reshape(28,28))
+  plt.gray()
+  ax.get_xaxis().set_visible(False)
+  ax.get_yaxis().set_visible(False)
+
+
+
+
+
